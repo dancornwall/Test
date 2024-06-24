@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Three.js Cube with Icons and Click Interaction</title>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Set up the scene, camera, and renderer
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Function to create SVG data URL
+        function createSVG(shape, color) {
+            const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">${shape}<rect width="100" height="100" fill="none" stroke="${color}" stroke-width="2"/></svg>`;
+            return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+        }
+
+        // Create textures with icons
+        const iconShapes = [
+            '<circle cx="50" cy="50" r="40" fill="#ff0000"/>',
+            '<rect x="10" y="10" width="80" height="80" fill="#00ff00"/>',
+            '<polygon points="50,10 90,90 10,90" fill="#0000ff"/>',
+            '<ellipse cx="50" cy="50" rx="45" ry="25" fill="#ffff00"/>',
+            '<path d="M10 50 Q 50 10, 90 50 T 90 50" stroke="#ff00ff" stroke-width="5" fill="none"/>',
+            '<text x="50" y="60" font-size="40" text-anchor="middle" fill="#00ffff">★</text>'
+        ];
+
+        const textures = iconShapes.map((shape, index) => {
+            const texture = new THREE.TextureLoader().load(createSVG(shape, ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'][index]));
+            return new THREE.MeshPhongMaterial({ map: texture, transparent: true });
+        });
+
+        // Create a cube with textured faces
+        const geometry = new THREE.BoxGeometry();
+        const cube = new THREE.Mesh(geometry, textures);
+        scene.add(cube);
+
+        // Position the cube to stand on its corner
+        cube.rotation.x = Math.PI / 4;
+        cube.rotation.z = Math.PI / 4;
+
+        // Add lighting
+        const ambientLight = new THREE.AmbientLight(0x404040);
+        scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+        directionalLight.position.set(1, 1, 1);
+        scene.add(directionalLight);
+
+        camera.position.y = 2;
+        camera.position.z = 5;
+        camera.lookAt(scene.position);
+
+        // Set up rotation direction
+        let rotationSpeed = 0.01;
+
+        // Animation function
+        function animate() {
+            requestAnimationFrame(animate);
+            cube.rotation.y += rotationSpeed;
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // Handle window resizing
+        window.addEventListener('resize', function() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }, false);
+
+        // Add click event listener to reverse rotation
+        renderer.domElement.addEventListener('click', function() {
+            rotationSpeed = -rotationSpeed;
+        }, false);
+    </script>
+</body>
+</html>
